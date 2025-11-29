@@ -1,1 +1,1128 @@
-# TSM2-PROGRESI-N7
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmos Pro: La Mecánica del Universo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Inter:wght@300;400;600&family=Crimson+Text:ital,wght@1,600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <!-- KaTeX para Matemáticas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <!-- Chart.js para visualización de datos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                        math: ['Crimson Text', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        space: {
+                            950: '#02040a', 
+                            900: '#0B0D17',
+                            800: '#151932',
+                            card: 'rgba(21, 25, 50, 0.65)',
+                            cardHover: 'rgba(30, 35, 70, 0.8)',
+                            input: 'rgba(255, 255, 255, 0.05)',
+                        },
+                        accent: {
+                            cyan: '#22D3EE',
+                            purple: '#A855F7',
+                            gold: '#FBBF24',
+                            rose: '#F43F5E',
+                            emerald: '#10B981',
+                            blue: '#3B82F6',
+                            indigo: '#6366F1',
+                        }
+                    },
+                    animation: {
+                        'orbit-slow': 'orbit 60s linear infinite',
+                        'orbit-medium': 'orbit 30s linear infinite',
+                        'orbit-fast': 'orbit 15s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 6s ease-in-out 3s infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'star-twinkle': 'twinkle 4s ease-in-out infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                    },
+                    keyframes: {
+                        orbit: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        twinkle: {
+                            '0%, 100%': { opacity: 0.2, transform: 'scale(0.8)' },
+                            '50%': { opacity: 1, transform: 'scale(1.2)' },
+                        }
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos Base Avanzados */
+        body {
+            background-color: #02040a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        
+        /* Canvas de fondo para estrellas dinámicas */
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Glassmorphism Refinado */
+        .glass-nav {
+            background: rgba(2, 4, 10, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-panel {
+            background: var(--tw-colors-space-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glass-panel:hover {
+            background: var(--tw-colors-space-cardHover);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Utilidades de Transición de Pestañas */
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Línea de Tiempo Vertical */
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, #22D3EE, #A855F7, transparent);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #02040a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* KaTeX Override */
+        .katex-display { margin: 0.5em 0; overflow-x: auto; overflow-y: hidden; padding-bottom: 5px;}
+        
+        /* Interactive Inputs */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+            margin-top: -8px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+        }
+
+        /* Utilidades para gráficas */
+        canvas { max-width: 100%; }
+        
+        .nav-btn.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="selection:bg-accent-cyan selection:text-space-950 flex flex-col min-h-screen">
+
+    <canvas id="starfield"></canvas>
+
+    <!-- Navegación Profesional -->
+    <nav class="fixed w-full z-50 glass-nav transition-all duration-300">
+        <div class="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <div class="flex items-center gap-4 cursor-pointer group" onclick="switchTab('inicio')">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-accent-cyan blur-lg opacity-20 group-hover:opacity-40 transition-opacity rounded-full"></div>
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-space-800 to-space-900 border border-white/10 flex items-center justify-center relative z-10">
+                            <i data-lucide="atom" class="text-accent-cyan w-6 h-6 animate-spin-slow"></i>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-display font-bold text-xl tracking-wider text-white leading-none">COSMOS <span class="text-accent-cyan">PRO</span></span>
+                        <span class="text-[10px] text-gray-400 tracking-[0.3em] uppercase mt-1">Mecánica Celeste</span>
+                    </div>
+                </div>
+
+                <!-- Menú Desktop Principal -->
+                <div class="hidden xl:flex items-center gap-1 bg-white/5 p-1.5 rounded-full border border-white/5 backdrop-blur-md">
+                    <button onclick="switchTab('inicio')" id="btn-inicio" class="nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all text-white bg-white/10 shadow-sm active">Inicio</button>
+                    <button onclick="switchTab('historia')" id="btn-historia" class="nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all text-gray-400 hover:text-white hover:bg-white/5">Historia</button>
+                    <button onclick="switchTab('leyes')" id="btn-leyes" class="nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all text-gray-400 hover:text-white hover:bg-white/5">Teoría</button>
+                    <button onclick="switchTab('comparador')" id="btn-comparador" class="nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all text-gray-400 hover:text-white hover:bg-white/5 text-accent-indigo">Comparador</button>
+                    <button onclick="switchTab('aplicaciones')" id="btn-aplicaciones" class="nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all text-gray-400 hover:text-white hover:bg-white/5">Aplicaciones</button>
+                    <button onclick="switchTab('glosario')" id="btn-glosario" class="nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all text-gray-400 hover:text-white hover:bg-white/5">Glosario</button>
+                </div>
+
+                <!-- Menú Desktop Secundario / Mobile Toggle -->
+                <div class="flex items-center gap-4">
+                     <button onclick="switchTab('simulacion')" id="btn-simulacion" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-accent-cyan/10 hover:bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/20 rounded-lg transition-all text-sm font-bold">
+                        <i data-lucide="play-circle" class="w-4 h-4"></i> Lab
+                    </button>
+                    <button onclick="switchTab('calculadora')" id="btn-calculadora" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-accent-gold/10 hover:bg-accent-gold/20 text-accent-gold border border-accent-gold/20 rounded-lg transition-all text-sm font-bold">
+                        <i data-lucide="calculator" class="w-4 h-4"></i> Calc
+                    </button>
+                    <button class="xl:hidden text-white p-2 hover:bg-white/10 rounded-lg transition-colors" onclick="toggleMobileMenu()">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Dropdown -->
+        <div id="mobile-menu" class="hidden xl:hidden glass-nav border-t border-white/10 p-4 space-y-2 absolute w-full max-h-[90vh] overflow-y-auto">
+             <button onclick="switchTab('inicio'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-white hover:bg-white/10 rounded-lg">Inicio</button>
+             <button onclick="switchTab('historia'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-gray-300 hover:bg-white/10 rounded-lg">Historia y Contexto</button>
+             <button onclick="switchTab('leyes'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-gray-300 hover:bg-white/10 rounded-lg">Leyes y Elipse</button>
+             <button onclick="switchTab('comparador'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-gray-300 hover:bg-white/10 rounded-lg">Comparador Planetario</button>
+             <button onclick="switchTab('aplicaciones'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-gray-300 hover:bg-white/10 rounded-lg">Aplicaciones Modernas</button>
+             <button onclick="switchTab('glosario'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-gray-300 hover:bg-white/10 rounded-lg">Glosario</button>
+             <button onclick="switchTab('simulacion'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-accent-cyan hover:bg-white/10 rounded-lg font-bold">Laboratorio Interactivo</button>
+             <button onclick="switchTab('calculadora'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-accent-gold hover:bg-white/10 rounded-lg font-bold">Calculadora Física</button>
+             <button onclick="switchTab('quiz'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-accent-purple hover:bg-white/10 rounded-lg font-bold">Evaluación</button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-[1500px] mx-auto w-full relative z-10">
+
+        <!-- ================= PESTAÑA INICIO ================= -->
+        <div id="tab-inicio" class="tab-content active">
+            <div class="grid lg:grid-cols-2 gap-16 items-center min-h-[80vh]">
+                <div class="space-y-10 animate-float">
+                    <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-accent-cyan/5 border border-accent-cyan/20 backdrop-blur-md">
+                        <span class="relative flex h-3 w-3">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-cyan opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-accent-cyan"></span>
+                        </span>
+                        <span class="text-accent-cyan text-xs font-bold tracking-widest uppercase">Física • Progresión 7</span>
+                    </div>
+                    
+                    <div>
+                        <h1 class="font-display text-6xl md:text-8xl font-bold leading-tight tracking-tight text-white mb-6">
+                            La Danza de <br>
+                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan via-white to-accent-purple">los Planetas</span>
+                        </h1>
+                        <p class="text-gray-400 text-xl leading-relaxed max-w-2xl border-l-4 border-accent-cyan/30 pl-6">
+                            Explora la arquitectura del sistema solar. Una plataforma educativa completa sobre las Leyes de Kepler, mecánica orbital y el futuro de la exploración espacial.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 max-w-md">
+                        <div class="glass-panel p-4 rounded-xl flex items-center gap-3">
+                            <i data-lucide="book-open" class="text-accent-purple w-6 h-6"></i>
+                            <div>
+                                <div class="text-2xl font-bold text-white">3</div>
+                                <div class="text-xs text-gray-500 uppercase tracking-wider">Leyes Universales</div>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl flex items-center gap-3">
+                            <i data-lucide="database" class="text-accent-emerald w-6 h-6"></i>
+                            <div>
+                                <div class="text-2xl font-bold text-white">8+</div>
+                                <div class="text-xs text-gray-500 uppercase tracking-wider">Planetas & Datos</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-4 pt-4">
+                        <button onclick="switchTab('historia')" class="group relative px-8 py-4 bg-accent-cyan hover:bg-cyan-400 text-space-950 font-bold rounded-xl transition-all shadow-[0_0_30px_rgba(34,211,238,0.3)] flex items-center gap-3 overflow-hidden">
+                            <span class="relative z-10 flex items-center gap-2">Explorar Historia <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i></span>
+                            <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                        </button>
+                        <button onclick="switchTab('simulacion')" class="px-8 py-4 glass-panel hover:bg-white/10 text-white font-bold rounded-xl transition-all flex items-center gap-2 border-white/10 hover:border-white/30">
+                            <i data-lucide="play-circle" class="w-5 h-5"></i> Laboratorio
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Visual Hero 3D (CSS Pure) -->
+                <div class="relative h-[600px] flex items-center justify-center perspective-[1000px]">
+                    <!-- Orbital Rings -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="w-[500px] h-[500px] border border-white/5 rounded-full animate-orbit-slow absolute"></div>
+                        <div class="w-[350px] h-[350px] border border-white/10 rounded-full animate-orbit-medium absolute"></div>
+                        <div class="w-[200px] h-[200px] border border-accent-cyan/20 rounded-full animate-orbit-fast absolute shadow-[0_0_50px_rgba(34,211,238,0.1)]"></div>
+                    </div>
+                    
+                    <!-- Sun -->
+                    <div class="relative z-10 w-32 h-32 bg-gradient-to-br from-yellow-300 via-orange-500 to-red-600 rounded-full shadow-[0_0_100px_rgba(234,179,8,0.6)] animate-pulse-slow flex items-center justify-center">
+                        <div class="absolute inset-0 bg-yellow-500 blur-xl opacity-50 rounded-full"></div>
+                    </div>
+
+                    <!-- Floating Planets -->
+                    <div class="absolute w-full h-full animate-orbit-medium">
+                        <div class="absolute top-1/2 right-0 w-8 h-8 bg-blue-500 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.6)] translate-x-1/2 -translate-y-1/2">
+                            <div class="absolute -inset-1 bg-blue-400 blur-sm opacity-50 rounded-full"></div>
+                        </div>
+                    </div>
+                    <div class="absolute w-full h-full animate-orbit-fast" style="width: 60%; height: 60%;">
+                        <div class="absolute top-0 left-1/2 w-4 h-4 bg-gray-300 rounded-full shadow-lg -translate-x-1/2 -translate-y-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA HISTORIA ================= -->
+        <div id="tab-historia" class="tab-content">
+            <div class="text-center mb-16">
+                <span class="text-accent-blue text-sm font-bold tracking-[0.3em] uppercase">Cronología del Cosmos</span>
+                <h2 class="text-5xl font-display font-bold text-white mt-4">La Evolución del Pensamiento</h2>
+                <p class="text-gray-400 mt-4 max-w-2xl mx-auto text-lg">De la Tierra como centro del universo a la exploración interestelar.</p>
+            </div>
+
+            <div class="relative max-w-5xl mx-auto pb-20">
+                <div class="timeline-line hidden md:block"></div>
+
+                <!-- Evento 1: Ptolomeo -->
+                <div class="relative grid md:grid-cols-2 gap-8 mb-20">
+                    <div class="md:text-right md:pr-12 animate-float">
+                        <span class="text-6xl font-display font-bold text-white/5 absolute -top-10 right-10 select-none">150 AD</span>
+                        <h3 class="text-2xl font-bold text-white mb-2">Claudio Ptolomeo</h3>
+                        <div class="inline-block px-3 py-1 bg-gray-800 rounded-full text-xs text-gray-400 mb-4">Modelo Geocéntrico</div>
+                        <p class="text-gray-400">Estableció que la Tierra estaba inmóvil en el centro y todo giraba a su alrededor. Un modelo complejo con epiciclos que duró 1400 años.</p>
+                    </div>
+                    <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 bg-gray-500 rounded-full border-4 border-space-900 hidden md:block mt-2"></div>
+                    <div class="pl-0 md:pl-12">
+                         <div class="glass-panel p-6 rounded-2xl border-l-4 border-gray-500">
+                             [Image of modelo geocéntrico ptolomeo]
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Evento 2: Copérnico -->
+                <div class="relative grid md:grid-cols-2 gap-8 mb-20">
+                    <div class="md:col-start-2 md:pl-12 animate-float-delayed">
+                         <span class="text-6xl font-display font-bold text-white/5 absolute -top-10 left-10 select-none">1543</span>
+                        <h3 class="text-2xl font-bold text-white mb-2">Nicolás Copérnico</h3>
+                        <div class="inline-block px-3 py-1 bg-accent-gold/20 text-accent-gold rounded-full text-xs mb-4">Revolución Heliocéntrica</div>
+                        <p class="text-gray-400">Propuso que el <strong>Sol</strong> estaba en el centro. Aunque seguía usando órbitas circulares perfectas, simplificó enormemente el modelo.</p>
+                    </div>
+                    <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 bg-accent-gold rounded-full border-4 border-space-900 hidden md:block mt-2"></div>
+                    <div class="row-start-2 md:row-start-1 md:text-right md:pr-12">
+                         <div class="glass-panel p-6 rounded-2xl border-r-4 border-accent-gold">
+                             [Image of modelo heliocéntrico copérnico]
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evento 3: Brahe & Kepler -->
+                <div class="relative grid md:grid-cols-2 gap-8 mb-20">
+                     <div class="md:text-right md:pr-12">
+                        <h3 class="text-3xl font-bold text-accent-cyan mb-2">Kepler y Brahe</h3>
+                        <div class="inline-block px-3 py-1 bg-accent-cyan/20 text-accent-cyan rounded-full text-xs mb-4">1609 - 1619</div>
+                        <p class="text-gray-300 text-lg">Usando los datos precisos de Tycho Brahe, Johannes Kepler formuló sus tres leyes, rompiendo el paradigma circular y estableciendo las órbitas elípticas.</p>
+                    </div>
+                    <div class="absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-accent-cyan rounded-full border-4 border-space-900 hidden md:block mt-2 shadow-[0_0_20px_cyan]"></div>
+                    <div class="pl-0 md:pl-12">
+                         <div class="glass-panel p-8 rounded-2xl border border-accent-cyan/30 bg-accent-cyan/5">
+                             <div class="text-4xl font-display font-bold text-white mb-2">3 Leyes</div>
+                             <p class="text-sm text-gray-400">Que cambiaron la física para siempre.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evento 4: Newton -->
+                <div class="relative grid md:grid-cols-2 gap-8 mb-20">
+                    <div class="md:col-start-2 md:pl-12 animate-float">
+                        <span class="text-6xl font-display font-bold text-white/5 absolute -top-10 left-10 select-none">1687</span>
+                        <h3 class="text-2xl font-bold text-white mb-2">Isaac Newton</h3>
+                        <div class="inline-block px-3 py-1 bg-accent-purple/20 text-accent-purple rounded-full text-xs mb-4">Gravitación Universal</div>
+                        <p class="text-gray-400">Explicó <strong>por qué</strong> los planetas siguen las leyes de Kepler: la fuerza de gravedad. Unificó la física terrestre y celeste.</p>
+                    </div>
+                    <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 bg-accent-purple rounded-full border-4 border-space-900 hidden md:block mt-2"></div>
+                    <div class="row-start-2 md:row-start-1 md:text-right md:pr-12">
+                         <div class="glass-panel p-6 rounded-2xl border-r-4 border-accent-purple">
+                             [Image of isaac newton principia mathematica]
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evento 5: Era Espacial -->
+                <div class="relative grid md:grid-cols-2 gap-8 mb-20">
+                    <div class="md:text-right md:pr-12 animate-float-delayed">
+                        <h3 class="text-2xl font-bold text-white mb-2">Era Espacial</h3>
+                        <div class="inline-block px-3 py-1 bg-accent-rose/20 text-accent-rose rounded-full text-xs mb-4">1957 - Presente</div>
+                        <p class="text-gray-400">Sputnik, Apolo, Voyager. Aplicamos las leyes de Kepler para lanzar satélites, visitar la Luna y enviar sondas fuera del sistema solar.</p>
+                    </div>
+                    <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 bg-accent-rose rounded-full border-4 border-space-900 hidden md:block mt-2"></div>
+                    <div class="pl-0 md:pl-12">
+                         <div class="glass-panel p-6 rounded-2xl border-l-4 border-accent-rose">
+                             
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA LEYES (TEORÍA) ================= -->
+        <div id="tab-leyes" class="tab-content">
+            <div class="space-y-24">
+                <!-- Ley 1 -->
+                <section class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="glass-panel p-10 rounded-3xl border border-accent-cyan/20 group hover:bg-space-cardHover">
+                        <div class="flex items-center gap-4 mb-6">
+                            <span class="text-6xl font-display font-bold text-accent-cyan/20">1</span>
+                            <h3 class="text-3xl font-display font-bold text-white">Ley de las Órbitas</h3>
+                        </div>
+                        <p class="text-gray-300 text-lg leading-relaxed mb-6">
+                            "Todos los planetas se mueven en <strong>órbitas elípticas</strong>, con el Sol situado en uno de los focos".
+                        </p>
+                        <div class="bg-black/30 p-6 rounded-xl border border-white/5 space-y-4">
+                            <div class="flex items-start gap-3">
+                                <i data-lucide="circle-dot" class="text-accent-cyan mt-1"></i>
+                                <div>
+                                    <strong class="text-white block">El Fin del Círculo</strong>
+                                    <span class="text-sm text-gray-400">Kepler rompió con 2000 años de dogma astronómico que exigía círculos perfectos.</span>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i data-lucide="target" class="text-accent-cyan mt-1"></i>
+                                <div>
+                                    <strong class="text-white block">Los Focos</strong>
+                                    <span class="text-sm text-gray-400">La elipse tiene dos focos. El Sol ocupa uno, el otro está matemáticamente vacío.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative h-[400px] glass-panel rounded-3xl overflow-hidden flex items-center justify-center bg-black/40">
+                         
+                    </div>
+                </section>
+
+                <!-- Ley 2 -->
+                <section class="grid lg:grid-cols-2 gap-12 items-center lg:flex-row-reverse">
+                    <div class="glass-panel p-10 rounded-3xl border border-accent-purple/20 group hover:bg-space-cardHover">
+                         <div class="flex items-center gap-4 mb-6">
+                            <span class="text-6xl font-display font-bold text-accent-purple/20">2</span>
+                            <h3 class="text-3xl font-display font-bold text-white">Ley de las Áreas</h3>
+                        </div>
+                        <p class="text-gray-300 text-lg leading-relaxed mb-6">
+                            "El radio vector que une al planeta y el Sol barre <strong>áreas iguales en tiempos iguales</strong>".
+                        </p>
+                        <div class="bg-accent-purple/10 border-l-4 border-accent-purple p-6 rounded-r-xl mb-6">
+                             <div class="text-xl font-math text-white mb-2">$$\frac{dA}{dt} = \text{constante}$$</div>
+                             <p class="text-sm text-gray-400">Significa que la velocidad orbital no es constante. El planeta acelera al acercarse al Sol.</p>
+                        </div>
+                    </div>
+                    <div class="relative h-[400px] glass-panel rounded-3xl overflow-hidden flex items-center justify-center bg-black/40">
+                        
+                    </div>
+                </section>
+
+                <!-- Ley 3 -->
+                <section class="glass-panel p-10 rounded-3xl border border-accent-gold/20">
+                     <div class="text-center max-w-3xl mx-auto mb-10">
+                         <div class="inline-block p-3 rounded-full bg-accent-gold/10 text-accent-gold mb-4"><i data-lucide="scale" class="w-8 h-8"></i></div>
+                        <h3 class="text-4xl font-display font-bold text-white mb-4">Ley de los Periodos (Armónica)</h3>
+                        <p class="text-gray-300 text-lg">
+                            Relaciona el tiempo que tarda un planeta en dar una vuelta ($T$) con su distancia media al Sol ($a$).
+                        </p>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-12 items-center">
+                        <div class="bg-space-900 rounded-2xl p-8 border border-white/10 text-center">
+                             <div class="text-sm text-gray-500 uppercase tracking-widest mb-4">La Fórmula Mágica</div>
+                             <div class="text-6xl font-math text-white mb-6">$$T^2 = k \cdot a^3$$</div>
+                             <p class="text-gray-400 text-sm">Para nuestro sistema solar ($T$ en años, $a$ en UA): <br> $k \approx 1$.</p>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                                <div class="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400 font-bold">1</div>
+                                <div>
+                                    <h4 class="text-white font-bold">La Tierra</h4>
+                                    <p class="text-xs text-gray-400">$a = 1 \text{ UA}$, $T = 1 \text{ año}$. $1^2 = 1^3$.</p>
+                                </div>
+                            </div>
+                             <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                                <div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center text-red-400 font-bold">2</div>
+                                <div>
+                                    <h4 class="text-white font-bold">Marte</h4>
+                                    <p class="text-xs text-gray-400">$a = 1.52 \text{ UA}$. $1.52^3 \approx 3.5$. $\sqrt{3.5} \approx 1.88 \text{ años}$.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA COMPARADOR (NUEVA) ================= -->
+        <div id="tab-comparador" class="tab-content">
+            <div class="text-center mb-10">
+                <span class="text-accent-indigo text-sm font-bold tracking-widest uppercase">Análisis de Datos</span>
+                <h2 class="text-4xl font-display font-bold text-white mt-2">Comparador Planetario</h2>
+                <p class="text-gray-400 mt-2">Visualiza la armonía del sistema solar a través de datos reales.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8 mb-12">
+                <!-- Selectores -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <label class="block text-gray-300 text-sm font-bold mb-2">Planeta A</label>
+                        <select id="planet-a-select" class="w-full bg-space-900 border border-white/10 rounded-lg p-3 text-white focus:border-accent-indigo outline-none" onchange="updateComparator()">
+                            <!-- Options JS -->
+                        </select>
+                    </div>
+                     <div class="glass-panel p-6 rounded-2xl">
+                        <label class="block text-gray-300 text-sm font-bold mb-2">Planeta B</label>
+                        <select id="planet-b-select" class="w-full bg-space-900 border border-white/10 rounded-lg p-3 text-white focus:border-accent-indigo outline-none" onchange="updateComparator()">
+                             <!-- Options JS -->
+                        </select>
+                    </div>
+                    
+                    <div class="glass-panel p-6 rounded-2xl bg-indigo-900/10 border-indigo-500/20">
+                        <h4 class="text-accent-indigo font-bold mb-2 flex items-center gap-2"><i data-lucide="info" class="w-4 h-4"></i> ¿Sabías qué?</h4>
+                        <p id="comparison-fact" class="text-sm text-gray-400">Júpiter es 318 veces más masivo que la Tierra, pero gira sobre su eje mucho más rápido (el día dura 10 horas).</p>
+                    </div>
+                </div>
+
+                <!-- Gráfica Principal -->
+                <div class="lg:col-span-2 glass-panel p-6 rounded-2xl flex flex-col">
+                    <h3 class="text-white font-bold mb-4">Verificación de la 3ª Ley ($T^2$ vs $a^3$)</h3>
+                    <div class="relative flex-grow min-h-[300px]">
+                        <canvas id="keplerChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tarjetas de Datos -->
+            <div class="grid md:grid-cols-2 gap-8" id="planet-cards-container">
+                <!-- Se llenan con JS -->
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA APLICACIONES ================= -->
+        <div id="tab-aplicaciones" class="tab-content">
+             <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Card 1: Satélites -->
+                <div class="glass-panel p-8 rounded-3xl border border-white/10 hover:border-accent-blue/50 group">
+                    <div class="w-14 h-14 bg-blue-900/30 rounded-2xl flex items-center justify-center mb-6 text-accent-blue group-hover:scale-110 transition-transform">
+                        <i data-lucide="satellite" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Satélites GPS</h3>
+                    <p class="text-gray-400 leading-relaxed mb-6">
+                        Para que tu GPS funcione, los satélites deben orbitar a una altura calculada con la 3ª Ley de Kepler para coincidir con la rotación terrestre.
+                    </p>
+                </div>
+
+                <!-- Card 2: Hohmann Transfer -->
+                <div class="glass-panel p-8 rounded-3xl border border-white/10 hover:border-accent-rose/50 group lg:col-span-2 relative overflow-hidden">
+                    <div class="relative z-10 grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <div class="w-14 h-14 bg-rose-900/30 rounded-2xl flex items-center justify-center mb-6 text-accent-rose group-hover:scale-110 transition-transform">
+                                <i data-lucide="rocket" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white mb-4">Transferencia de Hohmann</h3>
+                            <p class="text-gray-400 leading-relaxed mb-4">
+                                La ruta más eficiente para ir a Marte. Es una "media elipse" que toca la órbita de la Tierra en el perihelio y la de Marte en el afelio.
+                            </p>
+                        </div>
+                        <div class="h-full min-h-[200px] bg-black/40 rounded-xl flex items-center justify-center border border-white/5">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA GLOSARIO (NUEVA) ================= -->
+        <div id="tab-glosario" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+                    <h2 class="text-3xl font-bold text-white">Glosario Astronómico</h2>
+                    <div class="relative w-full md:w-64">
+                        <input type="text" id="glossary-search" onkeyup="filterGlossary()" placeholder="Buscar término..." class="w-full bg-space-900 border border-white/10 rounded-full py-2 px-4 pl-10 text-white focus:border-accent-cyan outline-none">
+                        <i data-lucide="search" class="w-4 h-4 text-gray-500 absolute left-3 top-3"></i>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="glossary-grid">
+                    <!-- Terms populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SIMULADOR ================= -->
+        <div id="tab-simulacion" class="tab-content">
+            <div class="flex flex-col lg:flex-row gap-8 min-h-[600px]">
+                <div class="w-full lg:w-1/4 glass-panel p-6 rounded-2xl flex flex-col">
+                    <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                        <i data-lucide="sliders" class="text-accent-cyan"></i> Parámetros
+                    </h3>
+                    <div class="space-y-8">
+                        <div>
+                            <label class="flex justify-between text-gray-300 text-sm font-bold mb-4">
+                                Excentricidad ($e$)
+                                <span id="ecc-display" class="bg-accent-cyan/20 text-accent-cyan px-2 py-1 rounded text-xs font-mono">0.50</span>
+                            </label>
+                            <input type="range" id="ecc-slider" min="0" max="0.8" step="0.01" value="0.5" class="w-full bg-space-900 rounded-lg appearance-none h-2">
+                        </div>
+                        <div>
+                             <label class="flex justify-between text-gray-300 text-sm font-bold mb-4">
+                                Velocidad Simulación
+                            </label>
+                            <input type="range" id="speed-slider" min="0.2" max="3" step="0.1" value="1" class="w-full bg-space-900 rounded-lg appearance-none h-2">
+                        </div>
+                        <div class="pt-6 border-t border-white/10">
+                            <h4 class="text-white text-sm font-bold mb-2">Datos en Tiempo Real</h4>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="bg-white/5 p-2 rounded">
+                                    <span class="text-gray-500 block">Velocidad</span>
+                                    <span id="vel-display" class="text-accent-emerald font-mono">--</span>
+                                </div>
+                                <div class="bg-white/5 p-2 rounded">
+                                    <span class="text-gray-500 block">Distancia</span>
+                                    <span id="dist-display" class="text-accent-blue font-mono">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full lg:w-3/4 glass-panel rounded-2xl relative overflow-hidden bg-space-950 flex items-center justify-center border border-white/10 shadow-2xl">
+                    <canvas id="orbitCanvas" width="1000" height="600" class="w-full h-full"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ================= CALCULADORA AVANZADA (MEJORADA) ================= -->
+        <div id="tab-calculadora" class="tab-content">
+             <div class="max-w-5xl mx-auto glass-panel p-8 md:p-12 rounded-3xl border border-accent-gold/20">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-white">Calculadora Vis-Viva</h2>
+                    <p class="text-gray-400 text-sm mt-1">Calcula la velocidad orbital exacta en cualquier punto.</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-12">
+                    <div class="space-y-6">
+                        <div class="bg-accent-gold/5 border border-accent-gold/20 p-4 rounded-xl text-center">
+                            <span class="font-math text-2xl text-white">$$v^2 = GM \left( \frac{2}{r} - \frac{1}{a} \right)$$</span>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-400 text-xs font-bold mb-1">Cuerpo Central (Masa)</label>
+                                <select id="vv-mass" class="w-full bg-space-900 text-white border border-white/10 rounded-lg p-3 text-sm">
+                                    <option value="1">Sol (1 Masa Solar)</option>
+                                    <option value="0.000003003">Tierra (para satélites)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-400 text-xs font-bold mb-1">Semieje Mayor $a$ (UA)</label>
+                                <input type="number" id="vv-a" class="w-full bg-space-900 text-white border border-white/10 rounded-lg p-3 text-sm" placeholder="Ej: 1.0 (Tierra)">
+                            </div>
+                            <div>
+                                <label class="block text-gray-400 text-xs font-bold mb-1">Distancia Actual $r$ (UA)</label>
+                                <input type="number" id="vv-r" class="w-full bg-space-900 text-white border border-white/10 rounded-lg p-3 text-sm" placeholder="Ej: 0.98 (Perihelio)">
+                            </div>
+                        </div>
+
+                        <button onclick="calcVisViva()" class="w-full py-3 bg-accent-gold text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors shadow-lg">Calcular Velocidad</button>
+                    </div>
+
+                    <div class="flex flex-col justify-center items-center bg-space-900/50 rounded-2xl border border-white/10 p-8 text-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-accent-gold/5 animate-pulse-slow"></div>
+                        <i data-lucide="gauge" class="w-12 h-12 text-gray-500 mb-4"></i>
+                        <span class="text-gray-500 text-xs uppercase tracking-widest relative z-10">Velocidad Orbital</span>
+                        <div id="vv-result" class="text-5xl font-display font-bold text-white my-4 relative z-10">---</div>
+                        <span class="text-accent-gold text-sm relative z-10">km/s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= QUIZ ================= -->
+        <div id="tab-quiz" class="tab-content">
+             <div class="max-w-3xl mx-auto">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-bold text-white">Evaluación Final</h2>
+                </div>
+                <div id="quiz-container" class="space-y-6"></div>
+                 <div id="quiz-results" class="hidden glass-panel p-8 rounded-2xl text-center border-accent-emerald/50 mt-8">
+                    <h3 class="text-2xl font-bold text-white mb-2">Resultados</h3>
+                    <p class="text-gray-300 mb-6">Puntuación: <span id="score-val" class="text-accent-emerald font-bold text-xl"></span></p>
+                    <button onclick="resetQuiz()" class="px-6 py-2 bg-white/10 rounded-lg text-white">Reiniciar</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer Actualizado -->
+    <footer class="border-t border-white/5 bg-space-950/80 backdrop-blur-md py-12 relative z-50">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="mb-8 flex justify-center items-center gap-2">
+                 <i data-lucide="atom" class="text-accent-cyan w-6 h-6"></i>
+                 <span class="font-bold text-white text-xl">COSMOS PRO</span>
+            </div>
+            
+            <div class="mb-10">
+                <h4 class="text-accent-cyan font-bold text-sm uppercase tracking-widest mb-6">Creado por</h4>
+                <ul class="text-gray-300 font-medium grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <li class="hover:text-white transition-colors">Samuel Concepción Rasgado</li>
+                    <li class="hover:text-white transition-colors">Jesús Andrés Ramón Martínez</li>
+                    <li class="hover:text-white transition-colors">Asael Manuel Domínguez Martínez</li>
+                    <li class="hover:text-white transition-colors">Eder Abdeel Vásquez Sánchez</li>
+                </ul>
+            </div>
+
+            <p class="text-gray-600 text-xs">© 2025 Proyecto Educativo Open Source. Optimizado para Progresión 7.</p>
+        </div>
+    </footer>
+
+    <!-- LOGICA JAVASCRIPT AVANZADA -->
+    <script>
+        // === DATOS PLANETARIOS (Extendidos) ===
+        const planetsData = [
+            { name: "Mercurio", a: 0.39, e: 0.206, period: 0.24, radius: 2440, color: "#9CA3AF" },
+            { name: "Venus", a: 0.72, e: 0.007, period: 0.62, radius: 6052, color: "#FDE047" },
+            { name: "Tierra", a: 1.00, e: 0.017, period: 1.00, radius: 6371, color: "#3B82F6" },
+            { name: "Marte", a: 1.52, e: 0.093, period: 1.88, radius: 3390, color: "#EF4444" },
+            { name: "Júpiter", a: 5.20, e: 0.049, period: 11.86, radius: 69911, color: "#F97316" },
+            { name: "Saturno", a: 9.54, e: 0.056, period: 29.45, radius: 58232, color: "#EAB308" },
+            { name: "Urano", a: 19.19, e: 0.046, period: 84.02, radius: 25362, color: "#22D3EE" },
+            { name: "Neptuno", a: 30.07, e: 0.010, period: 164.79, radius: 24622, color: "#3B82F6" },
+            { name: "Plutón", a: 39.48, e: 0.248, period: 247.94, radius: 1188, color: "#D1D5DB" }
+        ];
+
+        // === GLOSARIO DATA ===
+        const glossaryTerms = [
+            { term: "Afelio", def: "El punto en la órbita de un planeta más alejado del Sol." },
+            { term: "Perihelio", def: "El punto en la órbita de un planeta más cercano al Sol." },
+            { term: "Excentricidad", def: "Medida de cuánto se desvía una órbita de un círculo perfecto (0 = círculo, <1 = elipse)." },
+            { term: "Unidad Astronómica (UA)", def: "Distancia media entre la Tierra y el Sol (aprox. 150 millones de km)." },
+            { term: "Eclíptica", def: "El plano imaginario que contiene la órbita de la Tierra alrededor del Sol." },
+            { term: "Periodo Orbital", def: "El tiempo que tarda un objeto en completar una órbita entera." },
+            { term: "Semieje Mayor (a)", def: "La mitad del diámetro más largo de una elipse. Define el tamaño de la órbita." },
+            { term: "Vis-Viva", def: "Ecuación fundamental para calcular la velocidad orbital en cualquier punto de una elipse." },
+            { term: "Coplanaridad", def: "Propiedad geométrica donde varios objetos se encuentran en el mismo plano." }
+        ];
+
+        // === INICIALIZACIÓN ===
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [{left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false}]
+            });
+            lucide.createIcons();
+            initStarfield();
+            initComparador();
+            initGlossary();
+            initQuiz();
+            
+            // Check hash for direct navigation
+            const hash = window.location.hash.substring(1);
+            if(hash) switchTab(hash);
+        });
+
+        // === BACKGROUND ANIMATION (CANVAS) ===
+        function initStarfield() {
+            const canvas = document.getElementById('starfield');
+            const ctx = canvas.getContext('2d');
+            let width, height, stars = [];
+
+            function resize() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                stars = [];
+                for(let i=0; i<200; i++) {
+                    stars.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        size: Math.random() * 2,
+                        speed: Math.random() * 0.5 + 0.1
+                    });
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                stars.forEach(star => {
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size, 0, Math.PI*2);
+                    ctx.fill();
+                    star.y += star.speed;
+                    if(star.y > height) star.y = 0;
+                });
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+            animate();
+        }
+
+        // === SISTEMA DE NAVEGACIÓN ===
+        let currentTab = 'inicio';
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('tab-' + tabId);
+            if(target) target.classList.add('active');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-white', 'bg-white/10', 'shadow-sm');
+                btn.classList.add('text-gray-400');
+            });
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-gray-400');
+                activeBtn.classList.add('active', 'text-white', 'bg-white/10', 'shadow-sm');
+            }
+
+            // Gestionar Loops
+            if (tabId === 'simulacion') {
+                if (!isAnimating) { isAnimating = true; lastTime = performance.now(); requestAnimationFrame(animateOrbit); }
+            } else {
+                isAnimating = false;
+            }
+            
+            // Re-render chart if hidden previously
+            if (tabId === 'comparador' && keplerChart) {
+                keplerChart.update();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        // === COMPARADOR & CHART.JS ===
+        let keplerChart;
+        function initComparador() {
+            const selA = document.getElementById('planet-a-select');
+            const selB = document.getElementById('planet-b-select');
+            
+            planetsData.forEach((p, i) => {
+                selA.innerHTML += `<option value="${i}">${p.name}</option>`;
+                selB.innerHTML += `<option value="${i}" ${i===4?'selected':''}>${p.name}</option>`;
+            });
+
+            // Init Chart
+            const ctx = document.getElementById('keplerChart').getContext('2d');
+            const dataPoints = planetsData.map(p => ({
+                x: Math.pow(p.a, 3), // a^3
+                y: Math.pow(p.period, 2), // T^2
+                r: 5
+            }));
+
+            keplerChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Planetas del Sistema Solar',
+                        data: dataPoints,
+                        backgroundColor: '#22D3EE',
+                        borderColor: '#22D3EE'
+                    }, {
+                         type: 'line',
+                         label: 'Ley de Kepler (Ideal)',
+                         data: [{x:0, y:0}, {x: 65000, y: 65000}], // Linea recta T^2 = a^3 aprox
+                         borderColor: 'rgba(255,255,255,0.2)',
+                         borderDash: [5, 5],
+                         pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { type: 'linear', position: 'bottom', title: {display: true, text: 'Cubo del Semieje Mayor (a³)', color: '#9CA3AF'}, grid: {color: 'rgba(255,255,255,0.05)'} },
+                        y: { title: {display: true, text: 'Cuadrado del Periodo (T²)', color: '#9CA3AF'}, grid: {color: 'rgba(255,255,255,0.05)'} }
+                    },
+                    plugins: { legend: { labels: { color: 'white' } } }
+                }
+            });
+
+            updateComparator();
+        }
+
+        function updateComparator() {
+            const idxA = document.getElementById('planet-a-select').value;
+            const idxB = document.getElementById('planet-b-select').value;
+            const pA = planetsData[idxA];
+            const pB = planetsData[idxB];
+            
+            const container = document.getElementById('planet-cards-container');
+            container.innerHTML = `
+                ${createPlanetCard(pA)}
+                ${createPlanetCard(pB)}
+            `;
+        }
+
+        function createPlanetCard(p) {
+            return `
+                <div class="glass-panel p-6 rounded-2xl border-t-4" style="border-color: ${p.color}">
+                    <h3 class="text-2xl font-bold text-white mb-4">${p.name}</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Distancia Media (a)</span>
+                            <span class="text-white font-mono">${p.a} UA</span>
+                        </div>
+                        <div class="flex justify-between border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Periodo Orbital (T)</span>
+                            <span class="text-white font-mono">${p.period} Años</span>
+                        </div>
+                        <div class="flex justify-between border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Excentricidad (e)</span>
+                            <span class="text-white font-mono">${p.e}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Radio Planetario</span>
+                            <span class="text-white font-mono">${p.radius.toLocaleString()} km</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // === GLOSARIO ===
+        function initGlossary() {
+            const grid = document.getElementById('glossary-grid');
+            grid.innerHTML = glossaryTerms.map(item => `
+                <div class="glass-panel p-6 rounded-xl glossary-item">
+                    <h4 class="text-accent-cyan font-bold mb-2">${item.term}</h4>
+                    <p class="text-sm text-gray-400">${item.def}</p>
+                </div>
+            `).join('');
+        }
+
+        function filterGlossary() {
+            const term = document.getElementById('glossary-search').value.toLowerCase();
+            document.querySelectorAll('.glossary-item').forEach(el => {
+                const text = el.innerText.toLowerCase();
+                el.style.display = text.includes(term) ? 'block' : 'none';
+            });
+        }
+
+        // === CALCULADORA VIS-VIVA ===
+        function calcVisViva() {
+            const GM_Sun = 887.13; // GM en unidades (km/s)^2 * UA 
+            // Para simplificar usaremos: v = 29.78 * sqrt(2/r - 1/a) para el Sol donde r, a en UA, v en km/s
+            
+            const a = parseFloat(document.getElementById('vv-a').value);
+            const r = parseFloat(document.getElementById('vv-r').value);
+            const massFactor = parseFloat(document.getElementById('vv-mass').value); // 1 for sun
+            
+            if(!a || !r) return;
+
+            // v = sqrt(GM(2/r - 1/a))
+            // Constante K para tierra alrededor sol approx 29.78 km/s at 1 AU circular
+            // Formula practica: v = 29.78 * sqrt(M_mass * (2/r - 1/a))
+            
+            const v = 29.78 * Math.sqrt(massFactor * (2/r - 1/a));
+            
+            document.getElementById('vv-result').innerText = v.toFixed(2);
+        }
+
+        // === SIMULADOR (CANVAS) ===
+        const canvas = document.getElementById('orbitCanvas');
+        const ctx = canvas.getContext('2d');
+        let isAnimating = false;
+        let lastTime = 0;
+        
+        const state = {
+            eccentricity: 0.5,
+            angle: 0,
+            speedFactor: 1
+        };
+
+        document.getElementById('ecc-slider').addEventListener('input', (e) => {
+            state.eccentricity = parseFloat(e.target.value);
+            document.getElementById('ecc-display').innerText = state.eccentricity.toFixed(2);
+        });
+        document.getElementById('speed-slider').addEventListener('input', (e) => {
+            state.speedFactor = parseFloat(e.target.value);
+        });
+
+        function animateOrbit(timestamp) {
+            if (!isAnimating) return;
+            const dt = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const scale = Math.min(canvas.width, canvas.height) * 0.35;
+            const a = scale; 
+            const e = state.eccentricity;
+            const b = a * Math.sqrt(1 - e*e);
+            const c = a * e;
+            const sunX = centerX + c;
+            const sunY = centerY;
+            const emptyFocusX = centerX - c;
+
+            // Elipse
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY, a, b, 0, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Sol
+            const gradient = ctx.createRadialGradient(sunX, sunY, 5, sunX, sunY, 30);
+            gradient.addColorStop(0, '#FBBF24');
+            gradient.addColorStop(1, 'rgba(251, 191, 36, 0)');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 30, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 12, 0, 2 * Math.PI);
+            ctx.fillStyle = '#F59E0B';
+            ctx.fill();
+
+            // Foco Vacío
+            ctx.beginPath();
+            ctx.arc(emptyFocusX, centerY, 4, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.setLineDash([2, 2]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Physics
+            const r_actual = (a * (1 - e*e)) / (1 + e * Math.cos(state.angle));
+            const dTheta = (2000 * state.speedFactor) / (r_actual * r_actual);
+            state.angle += dTheta;
+
+            const px = sunX + r_actual * Math.cos(state.angle);
+            const py = sunY + r_actual * Math.sin(state.angle);
+
+            // Planeta
+            ctx.beginPath();
+            ctx.moveTo(sunX, sunY);
+            ctx.lineTo(px, py);
+            ctx.strokeStyle = 'rgba(34, 211, 238, 0.2)';
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(px, py, 10, 0, 2 * Math.PI);
+            ctx.fillStyle = '#22D3EE';
+            ctx.shadowColor = '#22D3EE';
+            ctx.shadowBlur = 15;
+            ctx.fill();
+
+            // Stats
+            const velRel = (1/r_actual) * 1000;
+            document.getElementById('vel-display').innerText = velRel.toFixed(1) + " km/s";
+            document.getElementById('dist-display').innerText = (r_actual/scale).toFixed(2) + " UA";
+
+            requestAnimationFrame(animateOrbit);
+        }
+
+        // === QUIZ ===
+        const questions = [
+            { q: "¿Qué forma tienen las órbitas planetarias?", options: ["Circulares", "Elípticas", "Parabólicas", "Irregulares"], correct: 1 },
+            { q: "¿Dónde está el Sol en la órbita?", options: ["En el centro", "En un foco", "En el borde", "Fuera"], correct: 1 },
+            { q: "¿Cuándo va más rápido un planeta?", options: ["Afelio", "Perihelio", "Siempre igual", "En los equinoccios"], correct: 1 },
+            { q: "La 3ª Ley relaciona T² con...", options: ["Masa", "Radio", "a³", "Gravedad"], correct: 2 },
+            { q: "¿Cuál es el valor aproximado de la excentricidad de la Tierra?", options: ["0.000", "0.017", "0.5", "0.2"], correct: 1 }
+        ];
+
+        function initQuiz() {
+            document.getElementById('quiz-container').innerHTML = questions.map((q, i) => `
+                <div class="glass-panel p-6 rounded-xl border border-white/5 question-card" data-index="${i}">
+                    <p class="text-lg font-bold text-white mb-4">${i+1}. ${q.q}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        ${q.options.map((opt, oi) => `<button onclick="checkAnswer(${i}, ${oi}, this)" class="opt-btn text-left px-4 py-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-gray-300">${opt}</button>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        let score = 0;
+        function checkAnswer(qi, oi, btn) {
+            const card = document.querySelector(`.question-card[data-index="${qi}"]`);
+            if(card.classList.contains('answered')) return;
+            card.classList.add('answered');
+            
+            if(oi === questions[qi].correct) {
+                btn.classList.add('bg-accent-emerald/20', 'border-accent-emerald');
+                score++;
+            } else {
+                btn.classList.add('bg-accent-rose/20', 'border-accent-rose');
+            }
+            
+            const allAnswered = document.querySelectorAll('.question-card.answered').length === questions.length;
+            if(allAnswered) {
+                document.getElementById('quiz-results').classList.remove('hidden');
+                document.getElementById('score-val').innerText = `${score}/${questions.length}`;
+            }
+        }
+        
+        function resetQuiz() {
+            score = 0;
+            document.getElementById('quiz-results').classList.add('hidden');
+            initQuiz();
+        }
+    </script>
+</body>
+</html>
